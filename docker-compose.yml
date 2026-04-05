@@ -1,0 +1,49 @@
+version: '3.9'
+
+services:
+
+  # Oracle XE pre-inicializado y ligero
+  oracle:
+    image: gvenzl/oracle-xe:18-slim
+    container_name: oracle-wms
+    ports:
+      - "1521:1521"
+    environment:
+      ORACLE_PASSWORD: oracle
+      ORACLE_ALLOW_REMOTE: "true"
+      ORACLE_PDB: XEPDB1
+      ORACLE_MEMORY: 1.5G          # Memoria suficiente para arrancar
+      ORACLE_CHARACTERSET: AL32UTF8
+      ORACLE_DB_USERNAME: wms       # Usuario para la app
+      ORACLE_DB_PASSWORD: wms
+      ORACLE_DB_CREATE: "true"
+    volumes:
+      - oracle-data:/opt/oracle/oradata
+    healthcheck:
+      test: ["CMD", "sqlplus", "-L", "wms/wms@//localhost:1521/XEPDB1", "-S", "SELECT 1 FROM dual;"]
+      interval: 10s
+      timeout: 5s
+      retries: 20
+      start_period: 120s            # Más tiempo para que arranque
+
+  # WMS App Spring Boot, ligera
+  wms-app:
+    build: .
+    container_name: wms-app
+    ports:
+      - "8080:8080"
+    environment:
+      SPRING_DATASOURCE_URL: jdbc:oracle:thin:@//oracle:1521/XEPDB1
+      SPRING_DATASOURCE_USERNAME: system
+      SPRING_DATASOURCE_PASSWORD: oracle
+      SPRING_JPA_HIBERNATE_DDL_AUTO: update
+    depends_on:
+      oracle:
+        condition: service_healthy
+    deploy:
+      resources:
+        limits:
+          memory: 256m             # Solo 256MB para WMS, deja más memoria para Oracle
+
+volumes:
+  oracle-data:
