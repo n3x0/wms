@@ -107,3 +107,9 @@ Actualmente el sistema sigue un enfoque **monolítico modular**, preparado para 
 Desarrollado como proyecto de aprendizaje y evolución hacia arquitectura backend moderna.
 
 Este proyecto está bajo licencia MIT (puedes cambiarla según necesites).
+
+---
+
+## 📄 Licencia
+
+Este proyecto está bajo licencia MIT (puedes cambiarla según necesites).
